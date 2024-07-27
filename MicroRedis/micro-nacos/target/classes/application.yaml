@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: micro-cloud-nacos
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:12577
+      config:
+        server-addr: 127.0.0.1:12577
+        refresh-enabled: true
+        file-extension: yaml
+        group: DEFAULT_GROUP
+        prefix: ${spring.application.name}
+        import-check:
+          enabled: false
+server:
+  port: 20577
