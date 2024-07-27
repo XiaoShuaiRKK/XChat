@@ -15,9 +15,9 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <spring.version>3.1.1</spring.version>
+        <spring.version>3.0.2</spring.version>
         <cloud.version>2022.0.3</cloud.version>
-        <alibaba.cloud.version>2022.0.0.0-RC2</alibaba.cloud.version>
+        <alibaba.cloud.version>2022.0.0.0</alibaba.cloud.version>
     </properties>
 
     <dependencyManagement>
