@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: xs-chat
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:12577
+server:
+  port: 15577
