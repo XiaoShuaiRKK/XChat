@@ -1,9 +1,10 @@
 var stompClient = null;
 var username = null;
+var channel = null;
 
 function connect(event) {
     username = $("#username").val().trim();
-
+    channel = $("#channel").val().trim();
     if(username) {
         var socket = new SockJS('/chat-websocket');
         stompClient = Stomp.over(socket);
@@ -11,16 +12,17 @@ function connect(event) {
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
 
-            stompClient.subscribe('/topic/public', function (messageOutput) {
+            stompClient.subscribe('/topic/' + channel, function (messageOutput) {
                 showMessageOutput(JSON.parse(messageOutput.body));
             });
 
             stompClient.send("/app/chat.addUser",
                 {},
-                JSON.stringify({sender: username, type: 'JOIN'})
+                JSON.stringify({sender: username, type: 'JOIN',serverName: channel})
             );
 
             $("#username-page").addClass('d-none');
+            $("#channel-page").addClass('d-none');
             $("#chat-page").removeClass('d-none');
         }, function (error) {
             alert('Could not connect to WebSocket server. Please refresh this page to try again!');
@@ -44,9 +46,9 @@ function sendMessage(event) {
     event.preventDefault();
 }
 
+
 function showMessageOutput(messageOutput) {
     var messageElement = $("<li>");
-
     if(messageOutput.type === 'JOIN') {
         messageElement.append("<strong>" + messageOutput.sender + "</strong> joined the chat");
     } else if (messageOutput.type === 'LEAVE') {
@@ -54,7 +56,6 @@ function showMessageOutput(messageOutput) {
     } else {
         messageElement.append("<strong>" + messageOutput.sender + ":</strong> " + messageOutput.content);
     }
-
     $("#messageArea").append(messageElement);
 }
 

@@ -1,5 +1,6 @@
 package com.xs.chat.service.listener;
 
+import com.xs.chat.service.WebSocketServer;
 import com.xs.entity.chat.ChatMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -8,14 +9,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @Slf4j
 public class WebSocketEventListener {
 
-    private final Set<String> connectedUsers = new HashSet<>();
+    private static final Map<String,WebSocketServer> servers = new HashMap<>();
+    private static int serverId = 1;
+
+    static {
+        servers.put("public",new WebSocketServer(serverId,"public"));
+    }
 
     @EventListener
     public void handleWebSocketConnectListener(SessionConnectedEvent event){
@@ -26,8 +31,9 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event){
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String username = (String) headerAccessor.getSessionAttributes().get("username");
-        if (username != null){
-            connectedUsers.remove(username);
+        String serverName = (String) headerAccessor.getSessionAttributes().get("serverName");
+        if (username != null && serverName != null){
+            servers.get(serverName).removeUser(username);
             log.info("User Disconnected : " + username);
             ChatMessage chatMessage = new ChatMessage();
             chatMessage.setType(ChatMessage.ChatMessageType.LEAVE);
@@ -35,11 +41,19 @@ public class WebSocketEventListener {
         }
     }
 
-    public boolean isUsernameTaken(String username){
-        return connectedUsers.contains(username);
+    public boolean isUsernameTaken(String serverName,String name){
+        return servers.get(serverName).isUsernameTaken(name);
     }
 
-    public void addConnectedUser(String username){
-        connectedUsers.add(username);
+    public void addConnectedUser(String serverName,String username){
+        servers.get(serverName).addConnectedUser(username);
+    }
+
+    public void addChannel(String serverName){
+        servers.put(serverName,new WebSocketServer(serverId++,serverName));
+    }
+
+    public boolean checkChannel(String serverName){
+        return servers.containsKey(serverName);
     }
 }
